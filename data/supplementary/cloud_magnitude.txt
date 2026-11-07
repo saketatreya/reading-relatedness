@@ -1,0 +1,44 @@
+=== exp 051 — Phase 1: does the SHAPE channel carry descent beyond centroids? ===
+VERDICT: NEAR-NULL (pre-registered null, reported as committed). Compute: jarvislabs L4.
+
+SETUP. 36 languages / 6 families (FLORES-200 devtest, 1012 parallel sentences).
+Per family: own-frame hub alignment (method/hub.py), held-out 200-sentence clouds.
+A->B paired displacement D = X[b]-X[a] (meaning cancels by the pairing). Channels:
+  centroid  d_cent  = ||mean_i D||          (the mean channel we always used)
+  shape     d_shape = sqrt(tr cov_i D)      (validated hub-robust in exp 050)
+Pre-registered PRIMARY: partial(shape, genealogy | centroid) > 0, perm-significant.
+
+RESULT (n=94 within-family pairs):
+                                     layer 8        layer 12
+  corr(centroid, shape)             +0.801         +0.737     (channels 74-80% redundant)
+  partial(centroid, gen | typ)      +0.138         +0.250     (033 replicates at L12: ~+0.27)
+  partial(shape, gen | CENTROID)    +0.223         -0.196     <<PRIMARY>>
+     permutation p                   0.049          0.113
+  partial(shape, gen | cent, typ)   +0.187         -0.197
+
+READ (honest). The shape channel does NOT robustly add descent beyond the centroid.
+L8 gives a marginal +0.22 (p=.049 — does NOT survive correcting for 2 layers); L12,
+the layer where the centroid best reproduces the established +0.27 descent signal,
+the shape channel is NEGATIVE. The two channels are 0.74-0.80 correlated. So for the
+DESCENT question, centroids are not badly lossy — shape magnitude is largely
+redundant with the mean. This is the pre-registered null; we report it.
+
+CAVEATS (temper the null, not excuses):
+  - Single config (mean_pool, 2 layers, 200-sentence covariance) is noisier than the
+    exp-033 ensemble (2 pools x 4 layers) that gave the robust +0.27.
+  - This tested the CRUDEST shape summary: a scalar MAGNITUDE (sqrt tr cov). Descent
+    could live in the transformation's DIRECTION (do sibling languages share
+    displacement directions?), which the trace discards. That is a DISTINCT hypothesis
+    (descent = transformation direction vs size), needs its own Phase-0 validation, and
+    must equally commit to accepting a null. Not goalpost-moving; a different instrument.
+  - Clock channel (shape magnitude vs divergence TIME) was not tested here.
+
+WHAT STANDS. The centroid descent signal and the molecular clock (prior work) are
+untouched — the broad thesis (SSL geometry encodes the process) does not depend on
+this. What deflates is the strong "centroids are EXTREMELY lossy" claim, for descent.
+
+PROVENANCE. experiment.py (self-contained, clones rep-phylogeny, extracts XLM-R-large,
+FLORES-200). run_output.txt = the raw job SUMMARY. pairs.csv was lost (orchestrator
+downloaded /root/out but the box home was /home; SUMMARY was printed to the log). A
+re-run for per-family/per-language detail needs the download path fixed + pairs.csv
+echoed to stdout.

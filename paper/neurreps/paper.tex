@@ -1,0 +1,667 @@
+\documentclass[mlmain]{jmlr}
+%%% Link to code: https://github.com/saketatreya/reading-relatedness
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+%%%% DON'T CHANGE %%%%%%%%%
+\jmlrvolume{}
+\firstpageno{1}
+\editors{List of editors' names}
+
+\jmlryear{2026}
+\jmlrworkshop{Symmetry and Geometry in Neural Representations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title[Reading Relatedness and Hierarchy]{Reading Relatedness and Hierarchy\titlebreak from Frozen Representations}
+\author{\Name{Saket Atreya} \Email{saket.atreya@students.iiit.ac.in}\\
+  \addr Lossfunk, Bangalore, India\\
+  \addr International Institute of Information Technology, Hyderabad, India
+  \AND
+  \Name{Paras Chopra} \Email{paras@lossfunk.com}\\
+  \addr Lossfunk, Bangalore, India}
+\newcommand{\Result}[1]{\csname result@#1\endcsname}
+\input{generated/numbers}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+What does agreement between representation geometry and a reference hierarchy establish?
+We separate pairwise relatedness, agreement on individual four-source comparisons, and recovery
+of reference splits in a reconstructed tree. Across frozen text, speech, protein, vision and
+single-cell representations, these measurements support different conclusions. Local quartet
+agreement ranges from \Result{summary.quartet_min} to \Result{summary.quartet_max}, but neighbor joining
+and FastME recover only a minority of the specified splits in the four larger populations.
+Nevertheless, their reconstructed trees retain substantial quartet agreement: low exact split
+recall does not imply absence of hierarchical information. Matched readout comparisons expose a
+second distinction. For 36 languages, simply centering raw centroids changes the cosine association
+with genealogy, adjusted for typology, from
+\Result{readouts.language.36.layers.12.raw.cosine.r} to
+\Result{readouts.language.36.layers.12.raw_centered.cosine.r}, approximately matching the aligned
+readout. Matching the origin also largely removes an apparent alignment-population effect.
+Exact additive-distance controls validate both reconstruction pipelines; a separate Brownian
+feature simulation illustrates how perturbations affect graded agreement and split recovery.
+The resulting protocol treats the origin, normalization, layer, aggregation and reconstruction
+method as parts of the measurement. It supports specific claims about accessible structure,
+without equating a failed readout with information absent from the representation.
+\end{abstract}
+
+\begin{keywords}
+representation geometry, hierarchical structure, phylogenetic reconstruction, readout sensitivity,
+self-supervised learning
+\end{keywords}
+
+\section{Introduction}
+
+Related sources often occupy nearby positions in a learned representation. This observation can
+support several progressively more specific interpretations: the representation distinguishes
+related from unrelated sources; it agrees with local branching relationships; or it permits
+reconstruction of a particular hierarchy. The measurements needed for these interpretations are
+different. A high nearest-neighbor score does not determine a tree, and a low rate of exact split
+recovery does not establish that a reconstructed tree is uninformative.
+
+Consider the vision case in this study. For DINOv2 centroids of CIFAR-100 classes, neighbor joining
+recovers only \Result{domains.vision.metrics.cosine.nj.recovered} of
+\Result{domains.vision.n_reference_splits} specified semantic splits using cosine dissimilarity.
+Yet the resulting tree agrees with
+\Result{domains.vision.metrics.cosine.nj.tree_quartet} of the reference-resolved quartets.
+These are compatible descriptions of the same reconstruction. An exact split requires every
+source to fall on its correct side; quartet agreement measures how much local structure remains.
+The reference itself is a semantic taxonomy, so neither result is evidence about evolutionary
+descent.
+
+The geometry being evaluated also requires specification. Changing the origin leaves Euclidean
+distances unchanged but can substantially change cosine dissimilarities. Source-specific
+alignment, radial normalization and layer selection introduce further choices. Consequently, a
+change in an association after preprocessing need not isolate the operation to which it is
+attributed. We use matched comparisons to determine what these choices change in the extracted
+representations, rather than select a readout by its agreement with the target.
+
+Our contribution is an empirical methodology with three components. First, five case studies
+compare local relatedness and hierarchical recovery with a shared evaluator and two distance-based
+tree estimators. Second, matched language readouts and a speech layer sweep identify consequential
+measurement choices, including an origin effect that explains much of an apparent alignment effect.
+Third, exact-distance controls and a separate feature-space simulation distinguish estimator
+validation from an illustrative perturbation mechanism. Together they support a more precise
+question than whether a representation ``contains a phylogeny'': \emph{which reference relationships
+are accessible through a declared readout, at which resolution?}
+
+This question connects representation probing to established work on distance-based reconstruction.
+Language vectors and multilingual encoders have been used to study genealogical and typological
+structure \citep{ostling-tiedemann-2017-continuous,bjerva-etal-2019-language,rama-etal-2020-probing}.
+The distinction between a representation's information and a probe's accessibility is central to
+probe interpretation \citep{hewitt-liang-2019-designing,pimentel-etal-2020-information}; structural
+probes explicitly learn a geometry for a target relation \citep{hewitt-manning-2019-structural}.
+Here we study specified distance readouts without training a supervised tree probe. Our comparisons
+also complement evidence that embedding geometry depends on influential dimensions and
+normalization \citep{timkey-van-schijndel-2021-bark}.
+
+\section{A protocol for measuring accessible structure}
+\label{sec:protocol}
+
+\paragraph{Sources, representations and references.}
+A source is a language, species, image class or cell type. Each source is reduced to a vector;
+Table~\ref{tab:populations} states the aggregation and the meaning of its reference hierarchy.
+The five populations are case studies with different sample sizes and reference resolutions.
+They are not exchangeable replications of one evolutionary process; text and speech also share
+language histories. We fix one primary readout per domain and assess alternatives in explicit
+sensitivity analyses. Extraction details and reference definitions are given in
+Appendix~\ref{app:extraction}; code, data and the complete result record are available at
+\url{https://github.com/saketatreya/reading-relatedness}.
+
+\begin{table}[t]
+\centering\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lp{.30\textwidth}p{.35\textwidth}rr}
+\toprule
+Domain & \raggedright Frozen representation / aggregation & \raggedright Reference interpretation & Sources & Splits \\
+\midrule
+Text & \raggedright XLM-R-large, aligned sentence centroid & \raggedright Coded family/branch/genus hierarchy & \Result{domains.text.n} & \Result{domains.text.n_reference_splits} \\
+Speech & \raggedright XLS-R-300m, utterance centroid & \raggedright Coded language family hierarchy & \Result{domains.speech.n} & \Result{domains.speech.n_reference_splits} \\
+Protein & \raggedright ESM-2-650M, concatenated gene vectors & \raggedright Coarse vertebrate class/subgroup hierarchy & \Result{domains.protein.n} & \Result{domains.protein.n_reference_splits} \\
+Vision & \raggedright DINOv2-base, image-class centroid & \raggedright CIFAR-100 superclasses plus five authored metaclasses & \Result{domains.vision.n} & \Result{domains.vision.n_reference_splits} \\
+Single-cell & \raggedright Geneformer V2-104M, cell-type centroid & \raggedright Lymphoid/myeloid grouping of PBMC types & \Result{domains.singlecell.n} & \Result{domains.singlecell.n_reference_splits} \\
+\bottomrule
+\end{tabular}
+\caption{The populations differ in what their references assert. Splits are unique nontrivial
+unrooted bipartitions; none of these empirical references fully resolves every source relationship.
+The cell grouping is not a measured developmental lineage tree.}
+\label{tab:populations}
+\end{table}
+
+Only the text experiment uses Procrustes alignment. Its rotations and per-language scales are fitted
+on 812 parallel sentences; centroids use the remaining 200. Its default origin is the grand mean
+over both portions, so the origin is transductive. Speech, vision and cell vectors are pooled
+in the encoder's coordinates. Protein vectors concatenate coordinate-standardized gene embeddings,
+with missing gene blocks set to zero. These reductions discard within-source variation; all claims
+below concern the resulting vectors, not every statistic of the original representation clouds.
+
+\paragraph{Three resolutions of agreement.}
+For source vectors $x_i$, we evaluate Euclidean distance and cosine dissimilarity
+$D^C_{ij}=1-x_i^\top x_j/(\|x_i\|\|x_j\|)$. We call the latter a dissimilarity because it need not
+satisfy the triangle inequality. The reference matrix $G$ is the path distance in the coded
+hierarchy with unit edges; it is not a matrix of divergence dates. We report:
+
+\begin{enumerate}\itemsep1pt
+\item \textbf{Pairwise relatedness:} Pearson correlation $r$ between the upper triangles of $D$
+and $G$, and nearest-neighbor group purity. Purity is averaged over tied nearest neighbors and
+compared with $\sum_g n_g(n_g-1)/[n(n-1)]$ for the stated grouping.
+\item \textbf{Local quartet agreement $Q_D$:} for each reference-resolved set $\{i,j,k,l\}$,
+compare the minimizing pairing among
+$D_{ij}+D_{kl}$, $D_{ik}+D_{jl}$ and $D_{il}+D_{jk}$ with the reference pairing.
+This is a local topological statistic, not a purely pairwise metric statistic.
+\item \textbf{Reconstructed hierarchy:} infer an unrooted tree, then report both reference-split
+recall $S=|\mathcal S(\hat T)\cap\mathcal S(G)|/|\mathcal S(G)|$ and quartet agreement $Q_{\hat T}$
+of that tree. A split and its complement count once; both sides must contain at least two sources.
+Tree quartets use topology with unit edges, independently of estimated branch lengths.
+\end{enumerate}
+
+The empirical references contain unresolved relationships. We therefore score only quartets that
+the reference resolves and do not label split recall ``exact tree recovery.'' In particular, we
+do not penalize an inferred tree merely for resolving a reference polytomy. Full-tree exactness and
+normalized Robinson--Foulds distance are additionally recorded for the fully resolved synthetic
+trees. Predicted quartet ties receive fractional credit; $1/3$ is the uniform-guess baseline.
+
+\paragraph{Estimators and uncertainty.}
+We compare neighbor joining (NJ; \citealt{saitou1987neighbor}) with FastME 2.1.6.3 balanced minimum
+evolution, using balanced taxon addition and its NNI and SPR searches
+\citep{lefort2015fastme}. FastME broadens the reconstruction comparison, but both procedures act on
+the same distance matrices and share a minimum-evolution motivation. Their agreement cannot
+establish a limit for other estimators or representation statistics.
+
+We enumerate all quartets for populations of at most 30 sources and otherwise sample 40,000
+distinct quartets uniformly, sharing the sample across readouts and methods. Unadjusted $r$,
+$Q_D$ and purity use 2,000 source-label permutations, with $p=(h+1)/2001$, where $h$ counts
+permutations at least as extreme as the observed value; $r$ is two-sided and agreement statistics
+upper-tailed. These test a random-label null, not a causal account of
+relatedness. Pairs and quartets sharing sources are not independent replicates. Adjusted language
+correlations are descriptive residual correlations, accompanied by leave-one-source-out sensitivity
+ranges rather than conditional-Mantel significance claims \citep{guillot2013mantel}. Because the
+analysis uses precomputed source centroids, an observation-level bootstrap is not available. The
+analysis is retrospective: it reuses previously extracted representations, and its protocol and
+controls were fixed before the FastME comparisons were run.
+
+\section{Local agreement and exact splits give different readings}
+\label{sec:crossmodal}
+
+\begin{figure}[t]
+\centering\includegraphics[width=\textwidth]{figs/fig1_recovery.pdf}
+\caption{Three resolutions of agreement, evaluated on the same sources and reference hierarchies.
+Color distinguishes Euclidean and cosine readouts; filled circles and open squares distinguish NJ
+and FastME in (b,c). The dotted line in (a,b) is the uniform quartet-guess baseline, not a confidence
+threshold. Split recall in (c) has no shared chance baseline across these differently resolved
+references. Complete counts and random-label tests appear in Appendix~\ref{app:fullresults}.}
+\label{fig:recovery}
+\end{figure}
+
+Local quartet agreement exceeds $1/3$ in all ten domain/readout combinations, ranging from
+\Result{summary.quartet_min} to \Result{summary.quartet_max} (Figure~\ref{fig:recovery}a).
+Nearest-neighbor purity also exceeds its group-size baseline throughout. This does not imply
+uniformly strong distance-matrix correlation: speech has $r=\Result{domains.speech.metrics.euclid.distance_r}$
+under Euclidean distance, with random-label $p=\Result{domains.speech.metrics.euclid.permutation.distance_r_p}$;
+the Euclidean protein correlation is also weak. Pairwise distances are therefore not uniformly
+faithful to the reference, even before reconstruction is considered.
+
+Exact reference-split recall is low for both reconstruction methods in the four larger populations,
+but it is method-dependent. For text, NJ recovers
+\Result{domains.text.metrics.euclid.nj.recovered}/\Result{domains.text.n_reference_splits} splits with
+Euclidean distance and \Result{domains.text.metrics.cosine.nj.recovered}/\Result{domains.text.n_reference_splits}
+with cosine; FastME recovers \Result{domains.text.metrics.euclid.fastme.recovered}/\Result{domains.text.n_reference_splits}
+under each readout. Protein changes from no recovered splits with NJ to
+\Result{domains.protein.metrics.cosine.fastme.recovered}/\Result{domains.protein.n_reference_splits}
+with cosine FastME. Speech recovers one of seven and vision two of 25 under both methods and metrics.
+The cell case recovers one of only two specified splits. It provides a small illustration, not a
+precise estimate of recovery on developmental trees.
+
+The reconstructed trees nevertheless preserve graded hierarchical agreement
+(Figure~\ref{fig:recovery}b). Vision reaches
+$Q_{NJ}=\Result{domains.vision.metrics.cosine.nj.tree_quartet}$ under cosine even though its split
+recall is \Result{domains.vision.metrics.cosine.nj.split_recall}.
+For protein, cosine FastME reaches $Q_{FM}=\Result{domains.protein.metrics.cosine.fastme.tree_quartet}$,
+compared with $Q_{NJ}=\Result{domains.protein.metrics.cosine.nj.tree_quartet}$.
+Conversely, FastME reduces vision quartet agreement while retaining the same split count.
+Optimizing the reconstruction objective need not improve every reference-based score. These
+results support limited exact split recovery under the evaluated pipelines, together with
+substantial partial recovery; they do not support absence of hierarchical information.
+
+Reference choice also affects apparently simple comparisons. Vision's cosine nearest-neighbor
+purity is \Result{domains.vision.metrics.cosine.nn_purity} for the five authored metaclasses, but
+\Result{domains.vision.metrics.cosine.nn_finer} for the 20 official CIFAR superclasses, whose chance
+level is \Result{domains.vision.metrics.cosine.nn_finer_chance}. Protein uses a coarse taxonomic
+grouping and uneven gene coverage, rather than a dated molecular phylogeny. These distinctions
+limit biological interpretation and make a pooled cross-domain recovery rate inappropriate.
+
+\section{Readout choices can explain apparent structural effects}
+\label{sec:readouts}
+
+\begin{figure}[t]
+\centering\includegraphics[width=\textwidth]{figs/fig2_readouts.pdf}
+\caption{Matched readout comparisons. (a) The same 36 languages and layer: changing the origin of
+raw centroids substantially changes the adjusted cosine association. Bars span source-deletion
+estimates; they are sensitivity ranges, not confidence intervals. (b) Evaluating the same 36
+languages after fitting on 36 or 89: subtracting each set's evaluation-centroid mean largely closes
+the gap. (c) Speech quartet agreement and participation ratio vary across layers. The dashed
+PR curve uses the right axis; the horizontal dotted line marks quartet chance.}
+\label{fig:readouts}
+\end{figure}
+
+\paragraph{The origin precedes the radial quotient.}
+On a 36-language subset, let $G_U$ be URIEL family-vector distance and $T$ URIEL imputed syntactic
+distance \citep{littell-etal-2017-uriel}. Unlike the coded hierarchy in Section~\ref{sec:crossmodal},
+these are feature-vector distances. We compare $\mathrm{corr}(D,G_U\mid T)$ using a fixed pair set.
+At the primary text layer, L12, raw Euclidean and cosine readouts yield
+\Result{readouts.language.36.layers.12.raw.euclid.r} and
+\Result{readouts.language.36.layers.12.raw.cosine.r}, respectively. Subtracting the mean of these
+36 raw centroids leaves Euclidean distances unchanged, but raises the cosine association to
+\Result{readouts.language.36.layers.12.raw_centered.cosine.r}.
+Procrustes alignment fitted on these same languages yields
+\Result{readouts.language.36.layers.12.aligned36.cosine.r}. Thus the large adjusted association
+does not require the source-specific alignment in this comparison. All four extracted layers and
+both evaluation populations are reported in Appendix~\ref{app:readouts}; L12 is the primary text
+layer throughout, not one chosen to maximize this association.
+
+For an explicit origin $o$, cosine compares the directions of $x_i-o$ and $x_j-o$. It removes
+positive rescaling of these vectors, but it is not translation-invariant. Euclidean distance obeys
+\[
+ \|x_i-x_j\|^2=\|x_i-o\|^2+\|x_j-o\|^2
+ -2\|x_i-o\|\|x_j-o\|\cos\theta_{ij}(o),
+\]
+so its radial and angular decomposition itself depends on $o$. In the 89-fitted frame restricted
+to the 36 languages, L12 norm correlates with tokenizer fragmentation (subwords per character) at
+\Result{readouts.language.36.layers.12.aligned89.norm_fragmentation_r}.
+This association motivates checking radial sensitivity. It does not prove that the radial
+component contains only nuisance or that removing it recovers a uniquely correct geometry.
+Norms can carry useful information in other settings \citep{oyama-etal-2023-norm}.
+
+\paragraph{Matching the origin changes the alignment-population interpretation.}
+For those same 36 languages, cosine partial correlation is
+\Result{readouts.language.36.layers.12.aligned36.cosine.r} when alignment is fitted on 36 and
+\Result{readouts.language.36.layers.12.aligned89.cosine.r} when their vectors are taken from the
+89-language fit. This comparison changes both the fitted transformations and the origin.
+After subtracting the mean of the evaluated 36 centroids within each frame, the values become
+\Result{readouts.language.36.layers.12.aligned36_centered.cosine.r} and
+\Result{readouts.language.36.layers.12.aligned89_centered.cosine.r}.
+The original gap therefore cannot be attributed to the alignment population independently of
+centering. This matched-origin operation is label-free but transductive: it uses the evaluation
+population to define its origin, and is not an independently validated rule for future sources.
+
+\paragraph{Effective dimension diagnoses a readout, not its information capacity.}
+For centered source vectors with singular values $s_j$, participation ratio is
+$\mathrm{PR}=(\sum_j s_j^2)^2/\sum_j s_j^4$.
+The final speech layer has PR \Result{readouts.speech.24.participation_ratio}, out of a maximum
+centered rank of 29, and mean pairwise cosine
+\Result{readouts.speech.24.mean_pairwise_cosine}. Its cosine quartet agreement is
+\Result{readouts.speech.24.metrics.cosine.distance_quartet}, compared with
+\Result{readouts.speech.12.metrics.cosine.distance_quartet} at hidden-state index 12, whose PR is
+\Result{readouts.speech.12.participation_ratio}. PR flags concentration of the measured variation;
+it neither proves that no hierarchy is encoded nor identifies the best layer without evaluation.
+Layer sweeps should accompany such diagnostics.
+
+\paragraph{Matching pairs changes the control comparison.}
+A similar attribution issue arises in the language typology control. Within six families, an
+eight-configuration aligned Euclidean ensemble yields an adjusted genealogical correlation of
+\Result{language_appendix.descent.imputed_all.r} with imputed typology over 94 pairs, versus
+\Result{language_appendix.descent.observed_matched.r} with co-observed typological features over
+81 pairs. On the \emph{same} 81 pairs, the imputed-control result is
+\Result{language_appendix.descent.imputed_matched.r}.
+The unmatched contrast therefore provides no evidence for a large imputation penalty. The retained
+descriptive association is useful, but its interpretation requires specifying both feature
+provenance and pair availability (Appendix~\ref{app:language}).
+
+\section{Validation and a controlled perturbation example}
+\label{sec:synthetic}
+
+\paragraph{An exact-distance control.}
+We first give the estimators the exact path-distance matrices of balanced binary trees with 8 and
+256 leaves. Both NJ and FastME recover every unique reference split and every tested quartet.
+These controls verify the distance-to-tree and scoring pipelines under exact additivity. They do
+not establish that either estimator is optimal on the empirical dissimilarities.
+
+\paragraph{A separate feature-space simulation.}
+We then generate 64-dimensional leaf vectors by summing independent $\mathcal N(0,I_{64})$ edge
+increments on a balanced depth-8 tree. If $d_T$ is its unit-edge distance, then
+\[
+ \mathbb E\!\left[\|Z_i-Z_j\|^2/64\right]=d_T(i,j).
+\]
+The observed finite-dimensional Euclidean distances are \emph{not} exact additive tree distances;
+neither are their cosine counterparts. This is a noisy positive example distinct from the oracle
+control. We evaluate all 253 unique internal splits with the same scorer used above, and separately
+report the five unique splits induced by the two deepest levels.
+
+We apply two feature-space perturbations: a positive radial scale $e^{k_N r_i}$, with fixed
+$r_i\sim\mathcal N(0,1)$, and donor mixing
+$Z_i\mapsto(1-k_C)Z_i+k_CZ_{d(i)}$, with a fixed donor from the opposite root subtree. We vary
+one amplitude at a time, sharing the tree, scales, donors and quartet sample across doses within
+each of five seeds. This interpolation is a sufficient construction for studying altered geometry;
+it is not a model fitted to contact, horizontal transfer or encoder training.
+
+\begin{figure}[t]
+\centering\includegraphics[width=\textwidth]{figs/fig3_perturbations.pdf}
+\caption{Perturbations of Brownian leaf features, separate from the exact-distance control.
+Lines are means over five seeds; bands show one seed standard deviation. (a) Positive radial
+scaling preserves cosine dissimilarities exactly. (b) Donor mixing changes distance correlation,
+local quartet agreement and reconstructed-tree quartet agreement at different rates; E denotes
+Euclidean distance. (c) Recall of all 253 unique reference splits under both readouts and
+estimators. The full numerical sweep and deep-split scores appear in Appendix~\ref{app:synthetic}.}
+\label{fig:synthetic}
+\end{figure}
+
+Without perturbation, mean Euclidean NJ split recall is
+\Result{synthetic_mean.clean.euclid.nj.split_recall}, while FastME yields
+\Result{synthetic_mean.clean.euclid.fastme.split_recall}.
+Positive radial scaling reduces Euclidean correlation but leaves the cosine measurements
+unchanged, as required algebraically. At mixing weight $k_C=0.35$, Euclidean distance correlation
+is \Result{synthetic_mean.mixing_0.35.euclid.distance_r}, local quartet agreement is
+\Result{synthetic_mean.mixing_0.35.euclid.distance_quartet}, and all-split recall is
+\Result{synthetic_mean.mixing_0.35.euclid.nj.split_recall} for NJ and
+\Result{synthetic_mean.mixing_0.35.euclid.fastme.split_recall} for FastME.
+At this dose neither method recovers any of the five deepest splits, even while many of the
+remaining splits survive. Whether topology appears to degrade before distances therefore depends
+on which splits are scored. Reporting the full hierarchy avoids reducing the response to a selected
+success/failure boundary.
+
+\paragraph{What the recovery guarantee explains.}
+For an additive binary-tree distance $d_T$ with minimum edge length $b>0$, Atteson's sufficient
+condition for NJ recovery is $\|\hat d-d_T\|_\infty<b/2$ \citep{atteson1999performance}.
+Exceeding this radius removes that guarantee; it does not require NJ to fail. NJ can succeed
+outside it \citep{mihaescu2009neighbor}. The condition concerns worst-case distance error relative
+to edge length, whereas a global correlation measures average variation across pairs.
+
+Under the additional idealized model $\hat d=d+\varepsilon\eta$, treating upper-triangle entries
+as the variables and assuming $\operatorname{Cov}(d,\eta)=0$, nonzero $\operatorname{Var}(d)$ and
+finite second moments,
+\[
+ \operatorname{corr}(d,\hat d)=
+ \left(1+\varepsilon^2\frac{\operatorname{Var}(\eta)}{\operatorname{Var}(d)}\right)^{-1/2}
+ =1-\frac{\varepsilon^2}{2}\frac{\operatorname{Var}(\eta)}{\operatorname{Var}(d)}+O(\varepsilon^4).
+\]
+This separates a global correlation scale from an exact-recovery guarantee. The empirical
+embeddings and the donor-mixing experiment are not assumed to satisfy this noise model. Thus the
+theorem, the illustrative simulation and the empirical observations provide different kinds of
+evidence; none identifies the cause of reconstruction errors in the real populations.
+
+\section{Discussion and limits}
+\label{sec:discussion}
+
+The strongest supported conclusion is that accessible structure has both a \emph{resolution} and
+a \emph{readout}. Local agreement can coexist with low exact split recall, while reconstructed
+trees still preserve many reference quartets. Meanwhile, apparently substantive differences between
+readouts can arise from unmatched origins or pair sets. A useful reporting protocol therefore
+declares the source aggregation, origin, normalization, layer and fitted population; evaluates
+relatedness, local quartets and reconstructed-tree agreement separately; validates the scorer on
+known trees; and compares proposed explanations under matched conditions.
+
+These checks do not select a universally correct geometry. A common orthogonal transformation
+preserves norms, angles and Euclidean distances alike, so orthogonal invariance does not uniquely
+privilege cosine. Source-specific rotations, scaling and centering are different operations.
+Identifiability results for specified contrastive objectives and generative models
+\citep{zimmermann2021contrastive} do not by themselves justify an invariant readout across the
+heterogeneous pretrained encoders studied here. Label-free diagnostics such as PR, radial
+associations and origin sensitivity can reveal fragile measurements; target agreement is still
+needed to assess what a readout recovers.
+
+The experiments also have substantive limits. The empirical references are coarse and partly
+authored. Protein retrieval uses gene-name queries rather than verified orthology, with strongly
+uneven coverage and zero-filled missing blocks. The cell population contains only eight types and
+two scored groups. Text uses parallel translated sentences, so corpus and translation effects may
+contribute to the measured associations. Cloud aggregation excludes covariance, multimodality and
+subspace-specific structure. Two language cloud statistics are reported in
+Appendix~\ref{app:clouds}; they do not rule out richer distributional readouts.
+
+Likewise, neither a small \emph{mean} four-point residual nor its diameter normalization rules out
+local distortion at short branches. Our results do not rule out hyperbolic readouts or alternative
+tree embeddings, and they do not identify a training-objective mechanism, which would require a
+controlled training intervention. Nonlinear distance transformations and learned probes remain possible
+alternatives. The present results justify precise statements about the tested measurements:
+partial hierarchical structure is accessible, exact reference splits are recovered unevenly,
+and the preprocessing that defines the geometry materially changes the answer.
+
+\bibliography{refs}
+\clearpage
+\appendix
+
+\section{Extraction, hierarchy definitions and reproducibility}
+\label{app:extraction}
+
+The analysis reads fixed representation caches and writes a single JSON result record with input
+SHA256 hashes, software versions, FastME options, scores and inferred empirical splits. Every
+result value, table and figure in this paper is generated from that record. Tests cover
+known topologies, complementary splits, rerooting, row permutations, unresolved quartets, ties,
+random-label nulls, radial invariance, translation invariance of Euclidean distance, Newick parsing,
+and exact additive recovery by both estimators. All encoders are used frozen. The extraction
+scripts record the model identifiers used; because upstream checkpoints can change, the saved
+caches, rather than bitwise re-extraction, define the analysis.
+
+\paragraph{Text.}
+XLM-R-large \citep{conneau-etal-2020-unsupervised} embeds 1,012 FLORES-200 devtest sentences per
+language \citep{nllb2022} in float32, with a maximum token length of 256. Mean pooling excludes
+special tokens. The primary readout, labeled L12, is the output of transformer block 12 with
+zero-based indexing (\texttt{hidden\_states[13]}). Alternative readouts are L4, L8 and L18,
+plus pooling over the 80 most frequent nonspecial subwords, with mean-pool fallback for empty
+matches. Sentence frequencies use the full corpus. The language hierarchy consists of coded
+macrofamily, branch, genus and language paths; its pair distances are prefix-tree distances.
+URIEL family vectors are a separate reference used for the adjusted language analyses.
+
+For language $\ell$, the alignment divides representations by the RMS deviation of its training
+cloud, estimates an orthogonal matrix by five generalized Procrustes iterations using centered
+training clouds, then applies that matrix to the \emph{uncentered}, scaled observations. Each
+language's centroid is its test mean minus the grand mean over all aligned observations in the
+fitted population. Thus rotation fitting uses paired training sentences, while the origin includes test
+observations. The 36-language and 89-language alignments are separately fitted. Our additional
+centering subtracts the mean of the vectors in the evaluation population; it does not refit
+rotations. The source-deletion analysis holds these fitted alignments fixed, recomputes an evaluation
+mean when that readout calls for one, and refits the residual regression.
+
+\paragraph{Speech.}
+XLS-R-300m \citep{babu2022xlsr} embeds 100 utterances per language from FLEURS
+\citep{conneau2022fleurs}. Time pooling excludes padding, then utterance vectors are averaged.
+Layers use \texttt{hidden\_states[6,12,18,24]}, a convention distinct from the text labels. The
+primary speech row uses index 12; the final layer is evaluated explicitly rather than substituted
+for it. Reference paths group Romance, Germanic, Slavic and Indo-Aryan under Indo-European and
+retain the other coded families separately. Nearest-neighbor purity uses the family level.
+
+\paragraph{Protein.}
+The checkpoint is \texttt{facebook/esm2\_t33\_650M\_UR50D} \citep{lin2023evolutionary}.
+Fifteen gene-name queries per vertebrate are sent to UniProt, preferring reviewed entries and
+otherwise taking the first returned sequence. Sequences are capped at 1,022 residues. Pooled
+embeddings for each gene are standardized coordinate-wise across species with available sequences;
+the 15 blocks are concatenated into a 19,200-dimensional species vector. Missing blocks are zero.
+This retrieval does not verify one-to-one orthology. Missingness ranges from no blocks to 14 of 15,
+and can itself affect similarity. All species-specific counts and gene names are saved in the
+result record. The reference uses class/subgroup/species paths (e.g., Mammal/Euarch/human), not
+branch-length estimates or divergence dates. Its six nontrivial splits are a limited taxonomic
+target.
+
+\paragraph{Vision.}
+DINOv2-base \citep{oquab2024dinov2} supplies the final CLS representation after resizing images to
+$224\times224$. All 100 test images per CIFAR-100 class are averaged
+\citep{krizhevsky2009learning}. The 20 official superclasses are grouped into five authored
+metaclasses: animal, plant, house, outdoor and vehicle. The exact mapping and all leaf paths are
+saved in the result record. The reference therefore has 25 scored semantic splits. We distinguish purity at
+these two grouping levels throughout.
+
+\paragraph{Single-cell.}
+Geneformer V2-104M is used with its transcriptome tokenizer and cell embedding extraction at
+\texttt{emb\_layer=-1}; \citet{theodoris2023transfer} describes the Geneformer framework rather
+than this exact checkpoint version. The processed PBMC3k labels \citep{zheng2017massively} define
+eight cell-type centroids: four lymphoid types (CD4 T, CD8 T, B and NK), three myeloid types (CD14
+monocytes, FCGR3A monocytes and dendritic cells), and megakaryocytes. The latter singleton supplies
+no nontrivial split. These are cell-type groupings, not lineage-tracing observations.
+
+\section{Complete cross-domain scores and random-label tests}
+\label{app:fullresults}
+
+\begin{table}[h]
+\centering\small\input{generated/domains}
+\caption{E: Euclidean; C: cosine; FM: FastME. $Q_D$ is direct distance quartet agreement, while
+$Q_{NJ}$ and $Q_{FM}$ score the reconstructed trees on the same reference-resolved quartets.
+Split columns give recovered/available counts. NN uses text branch, speech family, protein class,
+vision metaclass and cell grouping.}
+\end{table}
+
+\begin{table}[h]
+\centering\footnotesize\input{generated/nulls}
+\caption{Source-label permutation results. The minimum attainable reported $p$ is $1/2001$.
+For each tested quartet, the four-point residual is $(s_{(3)}-s_{(2)})/(2\max D)$, where $s$ are
+the three pair sums. ``Max'' is a sampled maximum for text/vision and exhaustive for the smaller
+populations; the mean is not Gromov's maximum four-point constant. For cosine, these remain
+descriptive dissimilarity residuals. No multiple-comparison-adjusted discovery claim is made.}
+\end{table}
+
+The quartet samples are uniform without replacement (seed 0). Reference-unresolved quartets are
+excluded after sampling. Ties use tolerance $10^{-10}\max(1,\max D)$; a prediction tied among $k$
+pairings receives $1/k$ credit if the reference pairing is among them. Nearest-neighbor ties are
+averaged similarly. The random-label test permutes the rows and columns of the representation
+matrix together, holding reference paths and group sizes fixed. The number of resolved quartets
+is not an effective sample size for inference.
+
+\section{Full readout sweeps}
+\label{app:readouts}
+
+\begin{table}[h]
+\centering\footnotesize\input{generated/readouts36}
+\caption{Adjusted language correlation on the same 36-language population. ``Centered'' means
+subtracting the evaluation-centroid mean; other variants use their default origin (zero for raw
+vectors, the fitted grand mean for aligned ones).
+E: Euclidean; C: cosine. The target is URIEL family distance, with imputed syntax as a descriptive
+control.}
+\end{table}
+\begin{table}[h]
+\centering\small\input{generated/readouts89}
+\caption{The corresponding 89-language evaluation. These associations describe a different
+population; they should not be compared with the 36-language results as a pure alignment effect.}
+\end{table}
+\begin{table}[h]
+\centering\small\input{generated/speech}
+\caption{Speech layer sweep using cosine dissimilarity. PR and mean pairwise cosine are computed
+on the source centroids. Euclidean results and all source-deletion estimates for text are
+included in the result record.}
+\end{table}
+
+For example, the source-deletion range of the centered raw L12 cosine association in the 36-language
+population is [\Result{readouts.language.36.layers.12.raw_centered.cosine.source_deletion_min},
+\Result{readouts.language.36.layers.12.raw_centered.cosine.source_deletion_max}]. This records
+dependence on individual sources while leaving the encoder and extracted observations fixed.
+It does not quantify extraction uncertainty or replace an independent evaluation population.
+
+\section{Additional language analyses}
+\label{app:language}
+
+\paragraph{Within-family association.}
+The six-family analysis covers 36 languages and 94 within-family pairs. It averages Euclidean
+distances from four text layers and two poolings, each divided by its mean within-family distance,
+using separately fitted family frames. Syntax distances use either dense imputed features or the
+features co-observed for a pair; the latter uses mean absolute differences over at least eight
+jointly observed features. Thus the two controls
+also differ in their distance construction, not just missingness. Restricting both to the same
+pair mask removes the large apparent effect attributed to imputation in an unmatched comparison.
+Partial correlations residualize both variables on the control and an intercept.
+
+\begin{table}[h]
+\centering\small\input{generated/controls}
+\caption{Matched and unmatched controls. All $n$ values here count dependent pairs, not independent
+languages. The reverse partial is geometry versus observed typology given genealogy. Source-deletion
+ranges are descriptive.}
+\end{table}
+
+\paragraph{Divergence-time association.}
+A secondary analysis uses 23 languages from Romance, Slavic, Germanic and Turkic, producing
+58 within-family pairs. Pairwise geometry and the hand-specified time axis are standardized
+separately within each family before pooling. We compare three date sets: initial hand-specified
+values (Original), a corrected set using published anchors (Cited), and an alternative anchor set
+as a sensitivity check (Alternative)
+\citep{chang-etal-2015-ancestry,holman2011automated,savelyev-robbeets-2020-turkic}.
+These are coarse node assignments, not independently measured pairwise dates. Lexically informed
+dates can share evidence with language similarity, so the association is not an independent
+calibration of a historical clock.
+
+\begin{table}[h]
+\centering\small\input{generated/clock}
+\caption{Date sensitivity with Pearson $r$, pooled Spearman $\rho$, and within-family source-label
+permutation $p$ (two-sided, 2,000 draws). Removing Germanic is a reported sensitivity analysis,
+not selection of a preferred population. Both geometry and dates are standardized within family.}
+\end{table}
+
+Under the corrected dates, within-family Pearson correlations are
+\Result{language_appendix.clock.cited.per_family.Romance.r} (Romance),
+\Result{language_appendix.clock.cited.per_family.Slavic.r} (Slavic),
+\Result{language_appendix.clock.cited.per_family.Germanic.r} (Germanic), and
+\Result{language_appendix.clock.cited.per_family.Turkic.r} (Turkic).
+Permutation shuffles source labels within each family and reconstructs its time-distance vector;
+individual pairs are never shuffled independently.
+
+\paragraph{Other multilingual encoders.}
+Analyses with mBERT \citep{devlin-etal-2019-bert}, XLM-R-base \citep{conneau-etal-2020-unsupervised}
+and LaBSE \citep{feng-etal-2022-language} use two layers (labeled L6 and L9), family-specific
+alignment and the same within-family pair definitions.
+Table~\ref{tab:replication} reports descriptive adjusted correlations and corrected-date clock
+associations. Differences among these models do not isolate capacity: architecture, pretraining
+and pooling differ, and the XLM-R-large ensemble uses more configurations.
+
+\begin{table}[h]
+\centering\small\input{generated/replication}
+\caption{Additional encoders. The three adjusted-correlation columns distinguish pair availability
+and control construction. Clock $p$ uses within-family source permutations, not pair permutations.}
+\label{tab:replication}
+\end{table}
+
+\paragraph{Cross-script proximity.}
+We report all four focal pairs, including readout-sensitive cases. Percentiles rank distances among all 3,916 language pairs; lower means closer.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+Pair & Single E & Single C & Ensemble E & Surface \\
+\midrule
+Hindi--Urdu & \Result{language_appendix.cross_script.pairs.hin-urd.geo_euclid_pct} & \Result{language_appendix.cross_script.pairs.hin-urd.geo_cosine_pct} & \Result{language_appendix.cross_script.pairs.hin-urd.ensemble_euclid_pct} & \Result{language_appendix.cross_script.pairs.hin-urd.surf_pct} \\
+Bengali--Hindi & \Result{language_appendix.cross_script.pairs.ben-hin.geo_euclid_pct} & \Result{language_appendix.cross_script.pairs.ben-hin.geo_cosine_pct} & \Result{language_appendix.cross_script.pairs.ben-hin.ensemble_euclid_pct} & \Result{language_appendix.cross_script.pairs.ben-hin.surf_pct} \\
+Kazakh--Turkish & \Result{language_appendix.cross_script.pairs.kaz-tur.geo_euclid_pct} & \Result{language_appendix.cross_script.pairs.kaz-tur.geo_cosine_pct} & \Result{language_appendix.cross_script.pairs.kaz-tur.ensemble_euclid_pct} & \Result{language_appendix.cross_script.pairs.kaz-tur.surf_pct} \\
+Arabic--Hebrew & \Result{language_appendix.cross_script.pairs.arb-heb.geo_euclid_pct} & \Result{language_appendix.cross_script.pairs.arb-heb.geo_cosine_pct} & \Result{language_appendix.cross_script.pairs.arb-heb.ensemble_euclid_pct} & \Result{language_appendix.cross_script.pairs.arb-heb.surf_pct} \\
+\bottomrule
+\end{tabular}
+\caption{The single configuration is global mean-pool L12; the ensemble averages eight globally
+aligned, mean-distance-normalized Euclidean matrices. The surface baseline is character 3--5-gram
+TF--IDF cosine dissimilarity. Percentiles are descriptive, without a cross-script invariance claim.}
+\end{table}
+
+The surface baseline has median distance
+\Result{language_appendix.cross_script.surface_saturation.median}; a fraction
+\Result{language_appendix.cross_script.surface_saturation.frac_gt_0_999} of pairs exceed 0.999.
+Near this ceiling, large percentile differences can reflect very small distance differences.
+Hindi--Urdu is close under the single geometric readouts, but neither that example nor the
+saturated surface ranking establishes general script invariance.
+
+\section{Synthetic sweep and the scope of supplementary controls}
+\label{app:synthetic}
+
+\begin{table}[h]
+\centering\small\input{generated/synthetic}
+\caption{Five-seed means for every declared perturbation setting. $S$ scores all 253 unique
+internal splits; ``Deep'' scores the five unique splits from the first two levels. E: Euclidean;
+C: cosine. Individual seed scores, full-tree exactness and normalized RF distances are saved in
+the result record. Seed variability appears in Figure~\ref{fig:synthetic}, not as an uncertainty estimate
+for the empirical populations.}
+\end{table}
+
+Seeds are 0--4. Independent random streams for donors (seed plus 1,000) and radii (seed plus 2,000)
+make perturbations identical across doses within a seed. The implemented order is mixing followed
+by radial scaling; the reported sweep varies one amplitude at a time, so no claim is made about
+combined perturbations. The Brownian generator and the exact-distance oracle are separate controls.
+
+\subsection{Language cloud statistics}
+\label{app:clouds}
+
+\begin{table}[h]
+\centering\small\input{generated/clouds}
+\caption{Language cloud statistics, residualized on centroid distance. Displacement-magnitude
+values are available only to three decimals; covariance values are recomputed from pair-level
+distances. These are association tests on 94 within-family pairs, not additional
+tree-reconstruction methods.}
+\end{table}
+
+The first analysis summarizes variation in aligned paired sentence displacements beyond the
+centroid offset. The second computes Bures distances between covariances of sentence-meaning-removed
+form residuals after a joint PCA reduction to 40 dimensions. Their mixed signs and layer dependence do not establish that higher moments are
+uninformative. Neither analysis tests arbitrary multimodal distributions, learned subspaces or
+nonlinear probes. We therefore report them as limited supplementary evidence and draw no general
+conclusion about distributional geometry.
+
+\end{document}

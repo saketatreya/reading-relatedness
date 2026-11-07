@@ -1,0 +1,51 @@
+{
+  "git_base": "432f2748f3c3b5abc60bfe78af83ad9835b2ea87",
+  "files": {
+    "data/representations/language.npz": {
+      "sha256": "8c17078144e7ebf901c51c3859766b664ac0b48e8c6b4666783c1f9a0ab1d241",
+      "original_path": "experiments/076_repro/out/language_reps.npz"
+    },
+    "data/representations/speech.npz": {
+      "sha256": "d2620252bc121b15cafa5730fb8f8bb095485de6ec9dac7be90d398705cd602d",
+      "original_path": "experiments/076_repro/out/speech_vectors.npz"
+    },
+    "data/representations/singlecell.npz": {
+      "sha256": "010c16ce5844e06c76809975dfd5182203856397b0a43f04e74638f4bd37eb9d",
+      "original_path": "experiments/076_repro/out/singlecell_vectors.npz"
+    },
+    "data/representations/replication.npz": {
+      "sha256": "ba55a07aa44443d1e7e24ee5fa7a7398386dfd64662e796e02820d0d3ce377eb",
+      "original_path": "experiments/076_repro/out/replication_reps.npz"
+    },
+    "data/representations/protein.npz": {
+      "sha256": "7b8e9469614724e21154411c4b31ff52eb1ff90028c5d5066cbd08767a1c08c4",
+      "original_path": "experiments/074/protein_vectors.npz"
+    },
+    "data/representations/vision.npz": {
+      "sha256": "ef194dc00cad6107b774f9fa33eeb61bdf34acc7eeab1cf06589fe1383a08042",
+      "original_path": "experiments/074/vision_vectors.npz"
+    },
+    "data/supplementary/cloud_magnitude.txt": {
+      "sha256": "17e4f1a6a12146f22fe35a945060bd7950eefa72517093aec2a23478d19a5f47",
+      "original_path": "experiments/051/SUMMARY.txt"
+    },
+    "data/supplementary/cloud_covariance.csv": {
+      "sha256": "961cf1f1464dc4de5eb26bbda9e25f637de2bad206efb03fd7de784e7d41ce02",
+      "original_path": "experiments/052/pairs.csv"
+    },
+    "data/references/date_sources.csv": {
+      "sha256": "1360fabfbb58b9e3e579daadbd44890521e8a05ecc52f380ecef6bcd47186c59",
+      "original_path": "paper/data/dates_draft.csv"
+    }
+  },
+  "extraction_sources": {
+    "076_repro/extract_language.py": "df94a8dc87589b9cb5d0fcf300c30fe1d2bca683e8187b24da4c8d718d17ea79",
+    "076_repro/extract_speech.py": "23e19cbd7057a57b76a87ef27c734cffabc91104a36a4aa7001062f8076f82a9",
+    "076_repro/extract_singlecell.py": "50e4ae13adc4e9690a216b1f0f08ab03f116a7ae4496d9cdf351b4f25e3257ff",
+    "076_repro/extract_replication.py": "fc1f365bb499cfbc91c75ff6145ee1447a8090b0e6d7374cd0182332b6935dd2",
+    "076_repro/langset.py": "b8fadca9c0a0b229f94bef95043ff5bc528f679c1c2468855be6c10bfc4e012b",
+    "076_repro/hub.py": "ac3e74964e65645ff6cca9d2d7f5e2fac5068c414d72295a674abde51795ecc8",
+    "074/protein_big.py": "f8356e8b90d355aed2aa44fe0a91a3662f14d57a0fc9d0f4a9e1831cfc5c9a51",
+    "074/vision_big.py": "be51d9ed591dbb6faf0cea3d578205712c1fe3de9696ddd097ac44dd3c82f650"
+  }
+}

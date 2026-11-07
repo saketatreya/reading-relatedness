@@ -1,0 +1,16 @@
+# Local FastME build, downloaded sources and interrupted-run checkpoints
+experiments/.cache/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# LaTeX intermediates (the final paper.pdf is kept)
+paper/neurreps/build/
+paper/neurreps/*.aux
+paper/neurreps/*.bbl
+paper/neurreps/*.blg
+paper/neurreps/*.log
+paper/neurreps/*.out
+texput.log

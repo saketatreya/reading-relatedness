@@ -1,0 +1,254 @@
+{
+  "families": {
+    "Germanic": [
+      "afr",
+      "dan",
+      "deu",
+      "eng",
+      "isl",
+      "nld",
+      "swe"
+    ],
+    "Romance": [
+      "cat",
+      "fra",
+      "glg",
+      "ita",
+      "por",
+      "ron",
+      "spa"
+    ],
+    "Slavic": [
+      "bul",
+      "ces",
+      "hrv",
+      "pol",
+      "rus",
+      "slk",
+      "ukr"
+    ],
+    "IndoAryan": [
+      "ben",
+      "guj",
+      "hin",
+      "mar",
+      "npi",
+      "urd"
+    ],
+    "Semitic": [
+      "amh",
+      "arb",
+      "ary",
+      "heb",
+      "mlt"
+    ],
+    "Turkic": [
+      "azj",
+      "kaz",
+      "kir",
+      "tur"
+    ]
+  },
+  "clock_sources": {
+    "Romance": [
+      "ron",
+      "ita",
+      "fra",
+      "spa",
+      "por"
+    ],
+    "Slavic": [
+      "rus",
+      "ukr",
+      "pol",
+      "ces",
+      "slk",
+      "bul",
+      "hrv"
+    ],
+    "Germanic": [
+      "isl",
+      "swe",
+      "dan",
+      "eng",
+      "deu",
+      "nld",
+      "afr"
+    ],
+    "Turkic": [
+      "tur",
+      "azj",
+      "kaz",
+      "kir"
+    ]
+  },
+  "lineage_paths": {
+    "ron": [
+      "PRom"
+    ],
+    "ita": [
+      "PRom",
+      "ItaloW"
+    ],
+    "fra": [
+      "PRom",
+      "ItaloW",
+      "West"
+    ],
+    "spa": [
+      "PRom",
+      "ItaloW",
+      "West",
+      "Ibero"
+    ],
+    "por": [
+      "PRom",
+      "ItaloW",
+      "West",
+      "Ibero"
+    ],
+    "rus": [
+      "PSlav",
+      "East"
+    ],
+    "ukr": [
+      "PSlav",
+      "East"
+    ],
+    "pol": [
+      "PSlav",
+      "WSlav"
+    ],
+    "ces": [
+      "PSlav",
+      "WSlav",
+      "CzSk"
+    ],
+    "slk": [
+      "PSlav",
+      "WSlav",
+      "CzSk"
+    ],
+    "bul": [
+      "PSlav",
+      "South"
+    ],
+    "hrv": [
+      "PSlav",
+      "South"
+    ],
+    "isl": [
+      "PGerm",
+      "North"
+    ],
+    "swe": [
+      "PGerm",
+      "North",
+      "SweDan"
+    ],
+    "dan": [
+      "PGerm",
+      "North",
+      "SweDan"
+    ],
+    "eng": [
+      "PGerm",
+      "WGerm"
+    ],
+    "deu": [
+      "PGerm",
+      "WGerm",
+      "ContW"
+    ],
+    "nld": [
+      "PGerm",
+      "WGerm",
+      "ContW",
+      "DutAfr"
+    ],
+    "afr": [
+      "PGerm",
+      "WGerm",
+      "ContW",
+      "DutAfr"
+    ],
+    "tur": [
+      "PTurk",
+      "Oghuz"
+    ],
+    "azj": [
+      "PTurk",
+      "Oghuz"
+    ],
+    "kaz": [
+      "PTurk",
+      "Kipchak"
+    ],
+    "kir": [
+      "PTurk",
+      "Kipchak"
+    ]
+  },
+  "age_sets": {
+    "original": {
+      "PRom": 1700,
+      "ItaloW": 1500,
+      "West": 1300,
+      "Ibero": 1050,
+      "PSlav": 1450,
+      "East": 800,
+      "WSlav": 1100,
+      "CzSk": 600,
+      "South": 1200,
+      "PGerm": 2500,
+      "North": 1300,
+      "SweDan": 700,
+      "WGerm": 1600,
+      "ContW": 1100,
+      "DutAfr": 350,
+      "PTurk": 2000,
+      "Oghuz": 900,
+      "Kipchak": 700
+    },
+    "cited": {
+      "PRom": 1750,
+      "ItaloW": 1524,
+      "West": 1300,
+      "Ibero": 1050,
+      "PSlav": 1500,
+      "East": 760,
+      "WSlav": 1100,
+      "CzSk": 1050,
+      "South": 1200,
+      "PGerm": 2250,
+      "North": 1500,
+      "SweDan": 700,
+      "WGerm": 1600,
+      "ContW": 1100,
+      "DutAfr": 350,
+      "PTurk": 1419,
+      "Oghuz": 900,
+      "Kipchak": 900
+    },
+    "alternative": {
+      "PRom": 1750,
+      "ItaloW": 1524,
+      "West": 1300,
+      "Ibero": 1050,
+      "PSlav": 1500,
+      "East": 760,
+      "WSlav": 1100,
+      "CzSk": 1050,
+      "South": 1200,
+      "PGerm": 2250,
+      "North": 1100,
+      "SweDan": 700,
+      "WGerm": 1600,
+      "ContW": 1100,
+      "DutAfr": 350,
+      "PTurk": 1419,
+      "Oghuz": 900,
+      "Kipchak": 900
+    }
+  }
+}

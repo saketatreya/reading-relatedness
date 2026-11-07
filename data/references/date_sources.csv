@@ -1,0 +1,27 @@
+# WP3 draft — divergence-date axis with citations (years BP).
+# axis_048 = the exp-048 inline dict (the figure data's axis, eyeballed).
+# cited = published anchor; source given per node. status: ANCHORED = direct citation
+# found; TODO = still needs a per-node source before the paper's dates.csv is final.
+# Holman11 = Holman et al. 2011, Current Anthropology 52(6):841-875, doi 10.1086/662127
+# ("Calibration Points" section + Table 1; E/H/A = epigraphic/historical/archaeological).
+# Their stated mean discrepancy between calibration and estimated dates is 29% — use as
+# the uncertainty scale in the sensitivity row.
+node,axis_048,cited,source,status
+PGerm,2500,2250,"Chang, Cathcart, Hall & Garrett 2015, Language 91(1), Table 12 (attested; Jasanoff 1994; Penzl 1988). Cross-check Holman11 'Germanic' 2100 BP (H; Pohl 2004: Cimbri/Teutones migrations late 2nd c. BCE) — sensitivity range 2100-2250",ANCHORED
+North,1300,1500,"Chang et al. 2015 Table 12 'Scandinavian' (Runic Norse; Fortson 2010). DISAGREES with Holman11 'Scandinavian (North Germanic)' 1100 BP (E; Haugen 1982:9, E/W split observable by the Viking period 750-1050 CE) — the two published anchors span 1100-1500; report both in the sensitivity variant",ANCHORED
+SweDan,700,,"TODO: no Holman11 point; swe and dan are both EAST Scandinavian, so SweDan < 1100 BP (the Holman Scandinavian point is the E/W split). Standard handbook (e.g. Faarlund) or Gray & Atkinson 2003 node",TODO
+WGerm,1600,,"TODO: no direct anchor (Chang et al. and Holman11 have no WGerm point). Bound: Holman11 'English-Frisian' 1550 BP (H; Bremmer 2009:125, Anglo-Saxon conquest 5th c. CE) is a within-WGerm split, so WGerm breakup >= 1550 BP",TODO
+ContW,1100,,TODO,TODO
+DutAfr,350,,"Afrikaans separation from Dutch, 17th c. settlement -> ~350 BP (standard; e.g. Roberge 2002)",TODO
+PRom,1700,1750,"Chang et al. 2015 Table 12 'Romance' (Latin regional texts c. 250 CE; J.N. Adams 2007). Cross-check Holman11 'Romance' 1729 BP (H; Watson 1999: 271 CE withdrawal of Roman troops south of the Danube) — anchors agree to ~1%",ANCHORED
+ItaloW,1500,1524,"Holman11 'Italo-Western Romance' 1524 BP (H; Bury 1923:408: 476 CE marks the disintegration of the Western Roman Empire extending to Italy)",ANCHORED
+West,1300,,"TODO: no Holman11 point (they split Romance only into Eastern vs Italo-Western)",TODO
+Ibero,1050,,TODO,TODO
+PSlav,1450,1500,"Chang et al. 2015 Table 12 'Slavic' (Birnbaum 1998; Timberlake 2013). Cross-check Holman11 'Slavic' 1450 BP (H; Schenker 1995:9,15-17: 6th c. CE expansion and political anarchy initiate the breakup of Common Slavic) — anchors agree; axis_048 value was already 1450",ANCHORED
+East,800,760,"Holman11 'East Slavic' 760 BP (H; Pugh 2007:10-11: sacking of Kiev 1240 CE soon followed by political fragmentation and linguistic divergence)",ANCHORED
+WSlav,1100,,"TODO: no Holman11 WSlav point. Bound: Czech-Slovak 1050 BP is a within-WSlav split, so WSlav breakup >= 1050 BP",TODO
+CzSk,600,1050,"Holman11 'Czech-Slovak' 1050 BP (E; Fodor 1962:132: 'the linguistic unity of the Czech and Slovak languages dissolved in the 10th century'). NOTE: axis_048 had 600 — off by ~2x, must be flagged in ERRATA and the date-sensitivity row",ANCHORED
+South,1200,,TODO,TODO
+PTurk,2000,1419,"NODE IDENTITY CORRECTION: the sampled Turkic languages (tur azj tuk uzn kaz kir bak tat) are ALL Common Turkic — no Chuvash — so the MRCA node this axis dates is COMMON TURKIC, not Proto-Turkic. Anchor: Holman11 'Common Turkic' 1419 BP (H; Golden 1998:19-20: Turk Khaganate established 552 CE). Savelyev & Robbeets 2020 root 2066 BP (95% HPD 1517-2755) dates Proto-Turkic INCLUDING Chuvash and is only an upper bound here; axis_048's 2000 inherited that conflation",ANCHORED
+Oghuz,900,,"TODO: no Holman11 Oghuz point; S&R 2020 sec 6.2 warn recent-split dates are implausibly SHALLOW in their model; use handbook estimate (Johanson 1998) or drop Turkic sub-nodes in the sensitivity variant",TODO
+Kipchak,700,900,"Holman11 'Western Turkic (Kipchak)' 900 BP (H; Troike 1969:191: Kipchak empire spread 11th-12th c. CE, destroyed 1239 CE). axis_048 had 700",ANCHORED
